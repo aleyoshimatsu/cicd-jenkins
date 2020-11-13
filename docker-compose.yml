@@ -1,0 +1,98 @@
+version: "3"
+
+services:
+  tomcat:
+    container_name: tomcat
+    image: tomcat:8.5.59-jdk8
+    ports:
+      - 8081:8080
+    networks:
+      - jenkins
+      - postgres
+    volumes:
+      - ./tomcat/webapps:/usr/local/tomcat/webapps
+      - ./tomcat/logs:/usr/local/tomcat/logs
+
+  pg-tasks:
+    container_name: pg-tasks
+    image: postgres:9.6
+    ports:
+      - 5433:5432
+    environment: 
+      - POSTGRES_DB=tasks
+      - POSTGRES_PASSWORD=password
+    networks:
+      - postgres
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    privileged: true
+    user: root
+    ports:
+      - 8080:8080
+      - 50000:50000
+    networks:
+      - jenkins
+    container_name: jenkins
+    volumes:
+      #- ~/jenkins:/var/jenkins_home
+      - ./jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/local/bin/docker:/usr/local/bin/docker
+
+#Windows with Docker Desktop WSL 2 backend
+#The vm.max_map_count setting must be set in the docker-desktop container:
+
+#wsl -d docker-desktop
+#sysctl -w vm.max_map_count=262144
+  sonarqube:
+    container_name: sonar
+    image: sonarqube:7.9.2-community
+    ports:
+      - "9000:9000"
+    networks:
+      - sonarnet
+      - jenkins
+    environment:
+      - discovery.type=single-node
+      - sonar.jdbc.url=jdbc:postgresql://pg-sonar:5432/sonar
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    depends_on:
+      - pg-sonar
+    volumes:
+      - sonarqube_conf:/opt/sonarqube/conf
+      - sonarqube_data:/opt/sonarqube/data
+      - sonarqube_extensions:/opt/sonarqube/extensions
+      - sonarqube_bundled-plugins:/opt/sonarqube/lib/bundled-plugins
+
+  pg-sonar:
+    container_name: pg-sonar
+    image: postgres:9.6
+    networks:
+      - sonarnet
+    environment:
+      - POSTGRES_USER=sonar
+      - POSTGRES_PASSWORD=sonar
+    volumes:
+      - postgresql:/var/lib/postgresql
+      - postgresql_data:/var/lib/postgresql/data
+
+networks:
+  postgres:
+  jenkins:
+  sonarnet:
+  seleniumGrid:
+ 
+volumes:
+  sonarqube_conf:
+    driver: local
+  sonarqube_data:
+    driver: local
+  sonarqube_extensions:
+    driver: local
+  sonarqube_bundled-plugins:
+    driver: local
+  postgresql:
+    driver: local
+  postgresql_data:
+    driver: local
