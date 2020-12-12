@@ -28,7 +28,9 @@ services:
       - postgres
 
   jenkins:
-    image: jenkins/jenkins:lts
+    build: 
+      context: ./docker
+      dockerfile: Dockerfile
     privileged: true
     user: root
     ports:

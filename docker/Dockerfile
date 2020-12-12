@@ -1,0 +1,26 @@
+FROM jenkins/jenkins:lts
+
+USER root
+
+# install wget
+RUN apt-get install -y wget
+
+# get maven
+RUN wget --no-verbose -O /tmp/apache-maven-3.6.3-bin.tar.gz https://downloads.apache.org/maven/maven-3/3.6.3/binaries/apache-maven-3.6.3-bin.tar.gz
+
+# install maven
+RUN tar xzf /tmp/apache-maven-3.6.3-bin.tar.gz -C /opt/
+RUN ln -s /opt/apache-maven-3.6.3 /opt/maven
+RUN ls -s /opt/maven/bin/mvn /usr/local/bin
+RUN rm -f /tmp/apache-maven-3.6.3-bin.tar.gz
+ENV MAVEN_HOME /opt/maven
+
+RUN chown -R jenkins:jenkins /opt/maven
+
+RUN apt-get clean
+
+USER jenkins
+
+# como usar:
+# docker build ./docker --tag="customdockerwithmaven"
+# docker run -u root --rm -d -p 8080:8080 -p 50000:50000 -v jenkins-data:/var/jenkins_home/custom -v /var/run/docker.sock:/var/run/docker.sock customdockerwithmaven
