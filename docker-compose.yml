@@ -87,6 +87,7 @@ services:
     container_name: selenium-hub
     networks:
       - seleniumGrid
+      - jenkins
     ports:
       - "4444:4444"
 
