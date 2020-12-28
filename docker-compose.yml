@@ -30,7 +30,7 @@ services:
   jenkins:
     build: 
       context: ./docker
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile-jenkins
     privileged: true
     user: root
     ports:
