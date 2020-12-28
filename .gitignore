@@ -1,5 +1,6 @@
 HELP.md
 jenkins_home/
+m2_repository/
 seleniumDrivers/
 tomcat/
 tasks-backend-test/
